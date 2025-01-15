@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+</head>
+<body>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+/* Main Container */
+.main-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Left Container */
+.left-container {
+    flex: 1;
+    background-color: white;
+    padding: 60px;
+    box-shadow: 8px 0 20px rgba(2, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(146, 235, 221);
+}
+
+.left-container h1 {
+    margin-bottom: 20px;
+    color: rgb(3, 44, 96);
+    font-size: 400%;
+}
+
+.left-container form {
+    width: 120%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#taskInput {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 125%;
+}
+
+button[type="submit"] {
+    background-color: #28a745;
+    color: white;
+}
+
+button.clear-all {
+    background-color: #dc3545;
+    color: white;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* Right Container */
+.right-container {
+    flex: 2;
+    padding: 20px;
+    overflow-x:auto;
+    background-image: url("bg.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.right-container h2 {
+    margin-bottom: 20px;
+    color: rgb(3, 44, 96);
+    font-size: 200%;
+    text-align: center;
+}
+
+#taskList {
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 5px;
+    display: inline-flex;
+}
+
+#taskList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f5f6f7;
+    padding: 5px 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    min-width: 200px;
+    height: 25vh;
+    flex: 1;
+    font-size: 125%;
+    box-shadow: 2px 4px 2px rgb(199, 192, 192);
+}
+}
+
+#taskList li.completed {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.delete {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 100%;
+}
+
+.delete:hover {
+    opacity: 0.8;
+}
+    </style>
+
+    <div class="main-container">
+        <!-- Left Container -->
+        <div class="left-container">
+            <h1>To-Do List</h1>
+            <form id="taskForm">
+                <input type="text" id="taskInput" placeholder="Enter a task..." required>
+                <button type="submit"><u>Add Your Task</u></button>
+                <button type="button" id="clearAllButton" class="clear-all"><u>Clear All Your Tasks</u></button>
+            </form>
+        </div>
+
+        <!-- Right Container -->
+        <div class="right-container">
+            <h2><u>Your Daily Tasks</u></h2>
+            <div>
+                <ul id="taskList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const taskForm = document.getElementById('taskForm');
+const taskInput = document.getElementById('taskInput');
+const taskList = document.getElementById('taskList');
+const clearAllButton = document.getElementById('clearAllButton');
+
+// Load tasks from localStorage on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    storedTasks.forEach(task => addTask(task.text, task.completed));
+});
+
+// Add task function
+function addTask(taskText, isCompleted = false) {
+    const li = document.createElement('li');
+    li.textContent = taskText;
+
+    // Mark task as completed if applicable
+    if (isCompleted) {
+        li.classList.add('completed');
+    }
+
+    // Toggle completion status
+    li.addEventListener('click', () => {
+        li.classList.toggle('completed');
+        saveTasks();
+    });
+
+    // Enable task editing
+    li.addEventListener('dblclick', () => {
+        const newText = prompt('Edit task:', taskText);
+        if (newText) {
+            li.firstChild.textContent = newText.trim();
+            saveTasks();
+        }
+    });
+
+    // Delete button
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete';
+    deleteButton.className = 'delete';
+    deleteButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        li.remove();
+        saveTasks();
+    });
+
+    li.appendChild(deleteButton);
+    taskList.appendChild(li);
+}
+
+// Save tasks to localStorage
+function saveTasks() {
+    const tasks = [];
+    taskList.querySelectorAll('li').forEach(li => {
+        tasks.push({
+            text: li.firstChild.textContent,
+            completed: li.classList.contains('completed'),
+        });
+    });
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+// Handle form submission
+taskForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const taskText = taskInput.value.trim();
+    if (taskText !== '') {
+        addTask(taskText);
+        saveTasks();
+        taskInput.value = '';
+    }
+});
+
+// Clear all tasks
+clearAllButton.addEventListener('click', () => {
+    taskList.innerHTML = '';
+    localStorage.removeItem('tasks');
+});
+    </script>
+</body>
+</html>
